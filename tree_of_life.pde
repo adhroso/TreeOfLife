@@ -5,61 +5,73 @@ List<Component> components;
 int height_ = 100;
 int cluster_offset = 100;
 int x_offset = 8;
-
+boolean process;
 // Setup and drawing functions
 void setup() {
     //setup
     size (1000, 800);
-    background(190);      // Fill in black in case cells don't cover all the windows
+    background(190);
     
     noSmooth();
     noLoop();
     
     //build data structure
-    String[] data = loadStrings("dataset.dat");
-    List<Data> dataList = generate_data_from_string(data);
-  
-    //generate initial clusters
-    List< List<Data>> clusters = new ArrayList<List<Data>>();
-    for (Data dl : dataList) {
-        List<Data> cluster = new ArrayList<Data>();
-        cluster.add(dl);
-        clusters.add(cluster);
+    if(new File("path/to/file.txt").isFile()) {
+        String[] data = loadStrings("dataset.dat");
+        List<Data> dataList = generate_data_from_string(data);
+      
+        //generate initial clusters
+        List< List<Data>> clusters = new ArrayList<List<Data>>();
+        for (Data dl : dataList) {
+            List<Data> cluster = new ArrayList<Data>();
+            cluster.add(dl);
+            clusters.add(cluster);
+        }
+    
+        // cluster by sequence similarity
+        SeqCluster seqCluster = new SeqCluster();
+        String attr = "sequence";
+        components = seqCluster.StringSimilarityCluster(clusters,attr);
+        initialize_position();
+        
+        process = true;
+    } else {
+        process = false;
     }
-
-    // cluster by sequence similarity
-    SeqCluster seqCluster = new SeqCluster();
-    String attr = "sequence";
-    components = seqCluster.StringSimilarityCluster(clusters,attr);
-    initialize_position();
 }
 
 
 //Visualize tree
 void draw() {
-    List<Data> ld = get_leaf_nodes();
-    for (Data d : ld) {
-        Point p = d.getPoint();
+    if(process) {
+        List<Data> ld = get_leaf_nodes();
+        for (Data d : ld) {
+            Point p = d.getPoint();
+            textSize(32);
+            text(String.valueOf(d.getId()),(float) p.getX(), (float) p.getY());
+            //textSize(10);
+            //text("("+p.getX()+","+p.getY()+")",(float) p.getX(), (float) p.getY()+50);
+        }
+        for (Data d : ld) {
+            Point p = d.getPoint();
+            p.setLocation(p.getX(), p.getY()-30);
+        }
+        
+        
+        for(Component c : components) {
+            draw_component(c);
+        }
+        Point p = ld.get(0).getPoint();
+        float x = (float)p.getX(), y = (float)p.getY();
+        line(x,y,x,y-height_);
+        fill(255,0,0);
+        textSize(24);
+        text("big bang", x-45,y-height_-10);
+    } else {
         textSize(32);
-        text(String.valueOf(d.getId()),(float) p.getX(), (float) p.getY());
-        //textSize(10);
-        //text("("+p.getX()+","+p.getY()+")",(float) p.getX(), (float) p.getY()+50);
+        fill(255,0,0);
+        text("error: check file and try again...", width/4, height/2);
     }
-    for (Data d : ld) {
-        Point p = d.getPoint();
-        p.setLocation(p.getX(), p.getY()-30);
-    }
-    
-    
-    for(Component c : components) {
-        draw_component(c);
-    }
-    Point p = ld.get(0).getPoint();
-    float x = (float)p.getX(), y = (float)p.getY();
-    line(x,y,x,y-height_);
-    fill(255,0,0);
-    textSize(24);
-    text("big bang", x-45,y-height_-10);
 }
 
 /**
