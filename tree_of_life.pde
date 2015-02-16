@@ -14,10 +14,10 @@ void setup() {
     
     noSmooth();
     noLoop();
-    
-    //build data structure
-    if(new File("path/to/file.txt").isFile()) {
-        String[] data = loadStrings("dataset.dat");
+
+    try {
+        String file = "dataset.dat";
+        String[] data = loadStrings(file);
         List<Data> dataList = generate_data_from_string(data);
       
         //generate initial clusters
@@ -33,10 +33,10 @@ void setup() {
         String attr = "sequence";
         components = seqCluster.StringSimilarityCluster(clusters,attr);
         initialize_position();
-        
+            
         process = true;
-    } else {
-        process = false;
+    } catch(NullPointerException e) {
+       process  = false; 
     }
 }
 
